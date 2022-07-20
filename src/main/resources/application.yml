@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: controller
+  main:
+    banner-mode: off
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+    time-zone: UTC
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+  devtools:
+    restart:
+      enabled: false
+
+logging:
+  level:
+    root: info
+    org:
+      springframework:
+        web:
+          client:
+            RestTemplate: DEBUG
+
+server:
+  shutdown: graceful
+  port: 8080
+
+security:
+  basic:
+    enabled: false
+
+management:
+  security:
+    enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,flyway,env,metrics"
+
+controller:
+  cache:
+    host: "127.0.0.1"
+    port: "6379"
+    password: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
+
