@@ -1,65 +1,93 @@
 package com.datsddos.controller.app.emqx.connector;
 
 import com.datsddos.controller.app.emqx.callback.OnMessageCallback;
+import lombok.SneakyThrows;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MessageBrokerConnector {
-    public void sendMessageToTopic() {
-        String subTopic = "testtopic/";
-        String pubTopic = "testtopic/";
-        String content = "Hello Main Controller Application";
-        int qos = 2;
-        String broker = "ws://173.249.13.108:8083";
-        String clientId = "emqx_test";
-        MemoryPersistence persistence = new MemoryPersistence();
+    private final Logger logger = LoggerFactory.getLogger(MessageBrokerConnector.class);
 
-        try {
-            MqttClient client = new MqttClient(broker, clientId, persistence);
+    @Value("${emqx.broker}")
+    protected String brokerAddress;
 
-            // MQTT connection option
-            MqttConnectOptions connOpts = new MqttConnectOptions();
-            // connOpts.setUserName("emqx_test");
-            // connOpts.setPassword("emqx_test_password".toCharArray());
-            // retain session
-            connOpts.setCleanSession(true);
+    @Value("${emqx.client_id}")
+    protected String client_id;
 
-            // set callback
-            client.setCallback(new OnMessageCallback());
+    @Value("${emqx.attack_message_topic}")
+    protected String attack_message_topic;
 
-            // establish a connection
-            System.out.println("Connecting to broker: " + broker);
-            client.connect(connOpts);
+    protected MqttConnectOptions mqttConnectOptions;
 
-            System.out.println("Connected");
-            System.out.println("Publishing message: " + content);
+    protected MqttClient mqttParticipantsClient;
 
-            // Subscribe
-            client.subscribe(subTopic);
+    protected MqttClient mqttAttacksClient;
 
-            // Required parameters for message publishing
-            MqttMessage message = new MqttMessage(content.getBytes());
-            message.setQos(qos);
-            client.publish(pubTopic, message);
-            System.out.println("Message published");
+    private static final int QualityOfService = 0;
 
-            client.disconnect();
-            System.out.println("Disconnected");
-            client.close();
-            System.exit(0);
-        } catch (MqttException me) {
-            System.out.println("reason " + me.getReasonCode());
-            System.out.println("msg " + me.getMessage());
-            System.out.println("loc " + me.getLocalizedMessage());
-            System.out.println("cause " + me.getCause());
-            System.out.println("excep " + me);
-            me.printStackTrace();
+    public MqttConnectOptions getConnectionOptions() {
+        if (mqttConnectOptions == null) {
+            mqttConnectOptions = new MqttConnectOptions();
+            mqttConnectOptions.setCleanSession(true);
         }
+        return mqttConnectOptions;
+    }
+
+    @SneakyThrows
+    public MqttClient getParticipantsMqttClient() {
+        if (mqttParticipantsClient == null || !mqttParticipantsClient.isConnected()) {
+            logger.info("Connecting to broker: " + brokerAddress);
+            MemoryPersistence persistence = new MemoryPersistence();
+            mqttParticipantsClient = new MqttClient(brokerAddress, client_id, persistence);
+            mqttParticipantsClient.setCallback(new OnMessageCallback());
+            mqttParticipantsClient.connect(getConnectionOptions());
+            logger.info("Connected to participant broker");
+        }
+        return mqttParticipantsClient;
+    }
+
+    @SneakyThrows
+    public MqttClient getAttacksMqttClient() {
+        if (mqttAttacksClient == null || !mqttAttacksClient.isConnected()) {
+            logger.info("Connecting to broker: " + brokerAddress);
+            MemoryPersistence persistence = new MemoryPersistence();
+            mqttAttacksClient = new MqttClient(brokerAddress, client_id, persistence);
+            mqttAttacksClient.setCallback(new OnMessageCallback());
+            mqttAttacksClient.connect(getConnectionOptions());
+            logger.info("Connected to attack requests broker");
+        }
+        return mqttAttacksClient;
+    }
+
+    @SneakyThrows
+    public void subscribeToAttackRequestsTopic() {
+        // Subscribe
+        MqttClient mqttClientForSubscribeAttackRequests = getAttacksMqttClient();
+        mqttClientForSubscribeAttackRequests.subscribe(attack_message_topic);
+    }
+
+
+    @SneakyThrows
+    public void sendMessageToTopicImmediately(String content, String userWalletTopic) {
+        // Subscribe
+        MqttClient mqttClientForPublishMessageToParticipants = getParticipantsMqttClient();
+
+        // Required parameters for message publishing
+        MqttMessage message = new MqttMessage(content.getBytes());
+        message.setQos(QualityOfService);
+        mqttClientForPublishMessageToParticipants.publish(userWalletTopic, message);
+        logger.info("Message published");
+
+        mqttClientForPublishMessageToParticipants.disconnect();
+        logger.info("Disconnected");
+        mqttClientForPublishMessageToParticipants.close();
     }
 }
 

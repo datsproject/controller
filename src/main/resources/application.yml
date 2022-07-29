@@ -23,7 +23,7 @@ logging:
 
 server:
   shutdown: graceful
-  port: 8080
+  port: 9090
 
 security:
   basic:
@@ -43,3 +43,7 @@ controller:
     port: "6379"
     password: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
 
+emqx:
+  attack_message_topic: "attackRequest/"
+  broker: "ws://173.249.13.108:8083"
+  client_id: "Controller"
