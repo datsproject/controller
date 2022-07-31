@@ -30,7 +30,7 @@ public class MessageBrokerConnector {
 
     private MqttClient mqttAttacksClient;
 
-    private static final int qualityOfService = 0;
+    private static final int quality_of_service = 0;
 
     public MqttConnectOptions getConnectionOptions() {
         if (mqttConnectOptions == null) {
@@ -44,7 +44,7 @@ public class MessageBrokerConnector {
     @SneakyThrows
     public MqttClient getParticipantsMqttClient() {
         if (mqttParticipantsClient == null || !mqttParticipantsClient.isConnected()) {
-            logger.info("Connecting to broker: {}" , brokerAddress);
+            logger.info("Connecting to broker: {}", brokerAddress);
             MemoryPersistence persistence = new MemoryPersistence();
             mqttParticipantsClient = new MqttClient(brokerAddress, clientId, persistence);
             mqttParticipantsClient.setCallback(new OnMessageCallback());
@@ -57,7 +57,7 @@ public class MessageBrokerConnector {
     @SneakyThrows
     public MqttClient getAttacksMqttClient() {
         if (mqttAttacksClient == null || !mqttAttacksClient.isConnected()) {
-            logger.info("Connecting to broker: {}" , brokerAddress);
+            logger.info("Connecting to broker: {}", brokerAddress);
             MemoryPersistence persistence = new MemoryPersistence();
             mqttAttacksClient = new MqttClient(brokerAddress, clientId, persistence);
             mqttAttacksClient.setCallback(new OnMessageCallback());
@@ -69,10 +69,9 @@ public class MessageBrokerConnector {
 
     @SneakyThrows
     public MqttClient reConnectAttacksMqttClient() {
-        logger.info("Reconnecting to attack requests broker");
         if (mqttAttacksClient != null && !mqttAttacksClient.isConnected()) {
             mqttAttacksClient.reconnect();
-            logger.info("Reconnected to attack requests broker");
+            logger.info("Connection lost so will be reconnected to attack requests broker");
         }
         return mqttAttacksClient;
     }
@@ -92,7 +91,7 @@ public class MessageBrokerConnector {
 
         // Required parameters for message publishing
         MqttMessage message = new MqttMessage(content.getBytes());
-        message.setQos(qualityOfService);
+        message.setQos(quality_of_service);
         mqttClientForPublishMessageToParticipants.publish(userWalletTopic, message);
         logger.info("Message published");
 

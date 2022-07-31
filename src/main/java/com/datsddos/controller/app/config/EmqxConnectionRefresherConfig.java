@@ -16,7 +16,7 @@ public class EmqxConnectionRefresherConfig {
 
     public static final Logger logger = LoggerFactory.getLogger(EmqxConnectionRefresherConfig.class);
 
-    @Scheduled(initialDelay = 1000, fixedDelay = 5000)
+    @Scheduled(fixedDelay = 5000, initialDelay = 3000)
     public MqttClient refreshContractUsersFixedRate() {
         return messageBrokerConnector.reConnectAttacksMqttClient();
     }
