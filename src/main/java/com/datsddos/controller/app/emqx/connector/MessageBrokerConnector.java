@@ -1,6 +1,7 @@
 package com.datsddos.controller.app.emqx.connector;
 
 import com.datsddos.controller.app.emqx.callback.OnMessageCallback;
+import com.datsddos.controller.app.emqx.operator.OnAttackMessageOperator;
 import lombok.SneakyThrows;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -8,6 +9,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,9 @@ public class MessageBrokerConnector {
 
     @Value("${emqx.attack_message_topic}")
     private String attackMessageTopic;
+
+    @Autowired
+    OnAttackMessageOperator onAttackMessageOperator;
 
     private MqttConnectOptions mqttConnectOptions;
 
@@ -47,7 +52,7 @@ public class MessageBrokerConnector {
             logger.info("Connecting to broker: {}", brokerAddress);
             MemoryPersistence persistence = new MemoryPersistence();
             mqttParticipantsClient = new MqttClient(brokerAddress, clientId, persistence);
-            mqttParticipantsClient.setCallback(new OnMessageCallback());
+            mqttParticipantsClient.setCallback(new OnMessageCallback(onAttackMessageOperator));
             mqttParticipantsClient.connect(getConnectionOptions());
             logger.info("Connected to participant broker");
         }
@@ -60,12 +65,13 @@ public class MessageBrokerConnector {
             logger.info("Connecting to broker: {}", brokerAddress);
             MemoryPersistence persistence = new MemoryPersistence();
             mqttAttacksClient = new MqttClient(brokerAddress, clientId, persistence);
-            mqttAttacksClient.setCallback(new OnMessageCallback());
+            mqttAttacksClient.setCallback(new OnMessageCallback(onAttackMessageOperator));
             mqttAttacksClient.connect(getConnectionOptions());
             logger.info("Connected to attack requests broker");
         }
         return mqttAttacksClient;
     }
+
 
     @SneakyThrows
     public MqttClient reConnectAttacksMqttClient() {

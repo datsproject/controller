@@ -8,12 +8,12 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, SecurityAutoConfiguration.class,
-		ManagementWebSecurityAutoConfiguration.class})
+        ManagementWebSecurityAutoConfiguration.class}, scanBasePackages = "com.datsddos.controller")
 @EnableScheduling
 public class ControllerApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ControllerApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ControllerApplication.class, args);
+    }
 
 }
