@@ -1,12 +1,17 @@
 package com.datsddos.controller.app.emqx.operator;
 
+import com.datsddos.controller.app.model.participant.OperableParticipant;
 import com.datsddos.controller.app.service.integration.cache.RedisClients;
 import com.datsddos.controller.app.service.integration.emqx.MessageBrokerClients;
+import com.datsddos.controller.app.utils.MapUtils;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Component
 public class OnAttackMessageOperator {
@@ -20,13 +25,18 @@ public class OnAttackMessageOperator {
     @Autowired
     private RedisClients redisClients;
 
+    @Autowired
+    private MapUtils mapUtils;
+
     private static final Logger logger = LoggerFactory.getLogger(OnAttackMessageOperator.class);
 
-    public void makeAttackMessageArrivedOperations(String topic) {
+    public void makeAttackMessageArrivedOperations(String topic, MqttMessage message) {
         if (topic.equalsIgnoreCase(attackMessageTopic)) {
             logger.info("Attack message operations will be implemented");
-            messageBrokerClients.getConnectedClientsFromMessageBroker();
-            redisClients.getContractUsersFromRedis();
+            Map<String, String> onlineParticipantsOnMessageBrokerMap = messageBrokerClients.getConnectedClientsFromMessageBroker();
+            Map<String, String> redisClientsMap = redisClients.getContractUsersFromRedis();
+            Map<String, OperableParticipant> finalTotalOnlineParticipantsMap = mapUtils.concatenateTwoMapsOverIntersections(redisClientsMap, onlineParticipantsOnMessageBrokerMap);
+            System.out.println("All things are calculated");
         }
     }
 }

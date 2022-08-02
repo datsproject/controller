@@ -91,7 +91,7 @@ public class MessageBrokerConnector {
 
 
     @SneakyThrows
-    public void sendMessageToTopicImmediately(String content, String userWalletTopic) {
+    public void sendSingleMessageToTopicImmediately(String content, String userWalletTopic) {
         // Subscribe
         MqttClient mqttClientForPublishMessageToParticipants = getParticipantsMqttClient();
 

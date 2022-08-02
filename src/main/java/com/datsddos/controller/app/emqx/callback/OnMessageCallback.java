@@ -7,9 +7,6 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 
@@ -35,7 +32,7 @@ public class OnMessageCallback implements MqttCallback {
         logger.info("Received message topic: {}", topic);
         logger.info("Received message Qos: {}", message.getQos());
         logger.info("Received message content: {}", new String(message.getPayload()));
-        onAttackMessageOperator.makeAttackMessageArrivedOperations(topic);
+        onAttackMessageOperator.makeAttackMessageArrivedOperations(topic, message);
 
     }
 
