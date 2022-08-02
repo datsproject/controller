@@ -7,7 +7,9 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class TargetAttackDao {
@@ -34,8 +36,12 @@ public class TargetAttackDao {
         return getHashOperation().values(HASH_KEY + "-" + operationType);
     }
 
-    public TargetAttackStart findTargetAttackById(String attackId, String operationType) {
-        return (TargetAttackStart) getHashOperation().get(HASH_KEY + "-" + operationType, attackId);
+    public Map<String, String> findTargetStartAttackById(String attackId, String operationType) {
+        return (LinkedHashMap<String, String>) getHashOperation().get(HASH_KEY + "-" + operationType, attackId);
+    }
+
+    public Map<String, String> findTargetStopAttackById(String attackId, String operationType) {
+        return (LinkedHashMap<String, String>) getHashOperation().get(HASH_KEY + "-" + operationType, attackId);
     }
 
     public String deleteTargetAttackById(String attackId, String operationType) {

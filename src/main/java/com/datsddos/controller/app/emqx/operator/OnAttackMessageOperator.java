@@ -5,7 +5,8 @@ import com.datsddos.controller.app.model.participant.OperableParticipant;
 import com.datsddos.controller.app.service.integration.cache.RedisClients;
 import com.datsddos.controller.app.service.integration.emqx.MessageBrokerClients;
 import com.datsddos.controller.app.utils.MapUtils;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import lombok.SneakyThrows;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +35,21 @@ public class OnAttackMessageOperator {
 
     private static final Logger logger = LoggerFactory.getLogger(OnAttackMessageOperator.class);
 
+    @SneakyThrows
     public void makeAttackMessageArrivedOperations(String topic, String message) {
         if (topic.equalsIgnoreCase(attackMessageTopic)) {
             logger.info("Attack message operations will be implemented");
+
             Map<String, String> onlineParticipantsOnMessageBrokerMap = messageBrokerClients.getConnectedClientsFromMessageBroker();
             Map<String, String> redisClientsMap = redisClients.getContractUsersFromRedis();
+
+            JSONObject messageJsonObj = new JSONObject(message);
+            String attackId = messageJsonObj.getString("attackId");
+            String attackRequest = redisClients.getStartAttackFromRedis(attackId);
+
+
             Map<String, OperableParticipant> finalTotalOnlineParticipantsMap = mapUtils.concatenateTwoMapsOverIntersections(redisClientsMap, onlineParticipantsOnMessageBrokerMap);
-            messageBrokerConnector.sendMessageToAllAddressesImmediately(finalTotalOnlineParticipantsMap,message);
+            messageBrokerConnector.sendMessageToAllAddressesImmediately(finalTotalOnlineParticipantsMap, attackRequest);
         }
     }
 }

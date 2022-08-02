@@ -1,6 +1,7 @@
 package com.datsddos.controller.app.emqx.connector;
 
-import com.datsddos.controller.app.emqx.callback.OnMessageCallback;
+import com.datsddos.controller.app.emqx.callback.OnAttackMessageCallback;
+import com.datsddos.controller.app.emqx.callback.OnParticipantMessageCallback;
 import com.datsddos.controller.app.emqx.operator.OnAttackMessageOperator;
 import com.datsddos.controller.app.model.participant.OperableParticipant;
 import lombok.SneakyThrows;
@@ -52,10 +53,10 @@ public class MessageBrokerConnector {
     @SneakyThrows
     public MqttClient getParticipantsMqttClient() {
         if (mqttParticipantsClient == null || !mqttParticipantsClient.isConnected()) {
-            logger.info("Connecting to broker: {}", brokerAddress);
+            logger.info("Connecting to participant broker: {}", brokerAddress);
             MemoryPersistence persistence = new MemoryPersistence();
             mqttParticipantsClient = new MqttClient(brokerAddress, clientId, persistence);
-            mqttParticipantsClient.setCallback(new OnMessageCallback(onAttackMessageOperator));
+            mqttParticipantsClient.setCallback(new OnParticipantMessageCallback());
             mqttParticipantsClient.connect(getConnectionOptions());
             logger.info("Connected to participant broker");
         }
@@ -65,10 +66,10 @@ public class MessageBrokerConnector {
     @SneakyThrows
     public MqttClient getAttacksMqttClient() {
         if (mqttAttacksClient == null || !mqttAttacksClient.isConnected()) {
-            logger.info("Connecting to broker: {}", brokerAddress);
+            logger.info("Connecting to attack request broker: {}", brokerAddress);
             MemoryPersistence persistence = new MemoryPersistence();
             mqttAttacksClient = new MqttClient(brokerAddress, clientId, persistence);
-            mqttAttacksClient.setCallback(new OnMessageCallback(onAttackMessageOperator));
+            mqttAttacksClient.setCallback(new OnAttackMessageCallback(onAttackMessageOperator));
             mqttAttacksClient.connect(getConnectionOptions());
             logger.info("Connected to attack requests broker");
         }
@@ -79,8 +80,8 @@ public class MessageBrokerConnector {
     @SneakyThrows
     public MqttClient reConnectAttacksMqttClient() {
         if (mqttAttacksClient != null && !mqttAttacksClient.isConnected()) {
-            mqttAttacksClient.reconnect();
             logger.info("Connection lost so will be reconnected to attack requests broker");
+            mqttAttacksClient = getAttacksMqttClient();
         }
         return mqttAttacksClient;
     }
@@ -105,14 +106,14 @@ public class MessageBrokerConnector {
         logger.info("Message published to topic " + userWalletTopic);
 
         mqttClientForPublishMessageToParticipants.disconnect();
-        logger.info("Disconnected");
+        logger.info("Disconnected from participant broker");
         mqttClientForPublishMessageToParticipants.close();
     }
 
     @SneakyThrows
     public void sendMessageToAllAddressesImmediately(Map<String, OperableParticipant> finalUserMap, String message) {
         for (Map.Entry<String, OperableParticipant> entry : finalUserMap.entrySet()) {
-            sendSingleMessageToTopicImmediately(String.valueOf(message), entry.getKey());
+            sendSingleMessageToTopicImmediately(String.valueOf(message), entry.getKey() + "/startattack");
         }
     }
 }

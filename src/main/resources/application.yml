@@ -3,6 +3,7 @@ spring:
     name: controller
   main:
     banner-mode: off
+    allow-circular-references: true
   jackson:
     date-format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
     time-zone: UTC

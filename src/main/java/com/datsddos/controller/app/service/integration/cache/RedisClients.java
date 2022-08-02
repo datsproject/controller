@@ -2,6 +2,7 @@ package com.datsddos.controller.app.service.integration.cache;
 
 import com.datsddos.controller.app.cache.object.ContractUser;
 import com.datsddos.controller.app.cache.repository.ContractUserDao;
+import com.datsddos.controller.app.cache.repository.TargetAttackDao;
 import com.datsddos.controller.app.exception.custom.ControllerCustomException;
 import com.datsddos.controller.app.service.json.JsonService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +21,9 @@ import java.util.Map;
 public class RedisClients {
     @Autowired
     private ContractUserDao contractUserDao;
+
+    @Autowired
+    private TargetAttackDao targetAttackDao;
 
     @Autowired
     private JsonService jsonService;
@@ -42,5 +47,17 @@ public class RedisClients {
             }
         });
         return redisClientsMap;
+    }
+
+    @SneakyThrows
+    public String getStartAttackFromRedis(String attackId) {
+        Map<String, String> targetAttackStartMap = targetAttackDao.findTargetStartAttackById(attackId, "start");
+        return  targetAttackStartMap.get("details");
+    }
+
+    @SneakyThrows
+    public String getStopAttackFromRedis(String attackId) {
+        Map<String, String> targetAttackStopMap = targetAttackDao.findTargetStopAttackById(attackId, "stop");
+        return targetAttackStopMap.get("details");
     }
 }
