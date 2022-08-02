@@ -2,6 +2,7 @@ package com.datsddos.controller.app.emqx.connector;
 
 import com.datsddos.controller.app.emqx.callback.OnMessageCallback;
 import com.datsddos.controller.app.emqx.operator.OnAttackMessageOperator;
+import com.datsddos.controller.app.model.participant.OperableParticipant;
 import lombok.SneakyThrows;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -12,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Service
 public class MessageBrokerConnector {
@@ -99,11 +102,18 @@ public class MessageBrokerConnector {
         MqttMessage message = new MqttMessage(content.getBytes());
         message.setQos(quality_of_service);
         mqttClientForPublishMessageToParticipants.publish(userWalletTopic, message);
-        logger.info("Message published");
+        logger.info("Message published to topic " + userWalletTopic);
 
         mqttClientForPublishMessageToParticipants.disconnect();
         logger.info("Disconnected");
         mqttClientForPublishMessageToParticipants.close();
+    }
+
+    @SneakyThrows
+    public void sendMessageToAllAddressesImmediately(Map<String, OperableParticipant> finalUserMap, String message) {
+        for (Map.Entry<String, OperableParticipant> entry : finalUserMap.entrySet()) {
+            sendSingleMessageToTopicImmediately(String.valueOf(message), entry.getKey());
+        }
     }
 }
 

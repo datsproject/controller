@@ -32,7 +32,7 @@ public class OnMessageCallback implements MqttCallback {
         logger.info("Received message topic: {}", topic);
         logger.info("Received message Qos: {}", message.getQos());
         logger.info("Received message content: {}", new String(message.getPayload()));
-        onAttackMessageOperator.makeAttackMessageArrivedOperations(topic, message);
+        onAttackMessageOperator.makeAttackMessageArrivedOperations(topic, new String(message.getPayload()));
 
     }
 

@@ -1,5 +1,6 @@
 package com.datsddos.controller.app.emqx.operator;
 
+import com.datsddos.controller.app.emqx.connector.MessageBrokerConnector;
 import com.datsddos.controller.app.model.participant.OperableParticipant;
 import com.datsddos.controller.app.service.integration.cache.RedisClients;
 import com.datsddos.controller.app.service.integration.emqx.MessageBrokerClients;
@@ -28,15 +29,18 @@ public class OnAttackMessageOperator {
     @Autowired
     private MapUtils mapUtils;
 
+    @Autowired
+    private MessageBrokerConnector messageBrokerConnector;
+
     private static final Logger logger = LoggerFactory.getLogger(OnAttackMessageOperator.class);
 
-    public void makeAttackMessageArrivedOperations(String topic, MqttMessage message) {
+    public void makeAttackMessageArrivedOperations(String topic, String message) {
         if (topic.equalsIgnoreCase(attackMessageTopic)) {
             logger.info("Attack message operations will be implemented");
             Map<String, String> onlineParticipantsOnMessageBrokerMap = messageBrokerClients.getConnectedClientsFromMessageBroker();
             Map<String, String> redisClientsMap = redisClients.getContractUsersFromRedis();
             Map<String, OperableParticipant> finalTotalOnlineParticipantsMap = mapUtils.concatenateTwoMapsOverIntersections(redisClientsMap, onlineParticipantsOnMessageBrokerMap);
-            System.out.println("All things are calculated");
+            messageBrokerConnector.sendMessageToAllAddressesImmediately(finalTotalOnlineParticipantsMap,message);
         }
     }
 }
