@@ -24,9 +24,11 @@ public class MessageBrokerConnector {
     @Value("${emqx.broker}")
     private String brokerAddress;
 
-    @Value("${emqx.client_id}")
-    private String clientId;
+    @Value("${emqx.attack_client_id}")
+    private String attackClientId;
 
+    @Value("${emqx.participant_client_id}")
+    private String participantClientId;
     @Value("${emqx.attack_message_topic}")
     private String attackMessageTopic;
 
@@ -53,9 +55,12 @@ public class MessageBrokerConnector {
     @SneakyThrows
     public MqttClient getParticipantsMqttClient() {
         if (mqttParticipantsClient == null || !mqttParticipantsClient.isConnected()) {
+            if (mqttParticipantsClient != null) {
+                mqttParticipantsClient.close();
+            }
             logger.info("Connecting to participant broker: {}", brokerAddress);
             MemoryPersistence persistence = new MemoryPersistence();
-            mqttParticipantsClient = new MqttClient(brokerAddress, clientId, persistence);
+            mqttParticipantsClient = new MqttClient(brokerAddress, participantClientId, persistence);
             mqttParticipantsClient.setCallback(new OnParticipantMessageCallback());
             mqttParticipantsClient.connect(getConnectionOptions());
             logger.info("Connected to participant broker");
@@ -66,9 +71,12 @@ public class MessageBrokerConnector {
     @SneakyThrows
     public MqttClient getAttacksMqttClient() {
         if (mqttAttacksClient == null || !mqttAttacksClient.isConnected()) {
+            if (mqttAttacksClient != null) {
+                mqttAttacksClient.close();
+            }
             logger.info("Connecting to attack request broker: {}", brokerAddress);
             MemoryPersistence persistence = new MemoryPersistence();
-            mqttAttacksClient = new MqttClient(brokerAddress, clientId, persistence);
+            mqttAttacksClient = new MqttClient(brokerAddress, attackClientId, persistence);
             mqttAttacksClient.setCallback(new OnAttackMessageCallback(onAttackMessageOperator));
             mqttAttacksClient.connect(getConnectionOptions());
             logger.info("Connected to attack requests broker");
@@ -103,7 +111,7 @@ public class MessageBrokerConnector {
         MqttMessage message = new MqttMessage(content.getBytes());
         message.setQos(quality_of_service);
         mqttClientForPublishMessageToParticipants.publish(userWalletTopic, message);
-        logger.info("Message published to topic " + userWalletTopic);
+        logger.info("Message published to topic {}", userWalletTopic);
 
         mqttClientForPublishMessageToParticipants.disconnect();
         logger.info("Disconnected from participant broker");
