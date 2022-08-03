@@ -46,8 +46,8 @@ controller:
 
 emqx:
   attack_message_topic: "attackRequest/"
-  broker: "ws://173.249.13.108:8083"
+  broker: "ws://149.102.148.81:8083"
   attack_client_id: "ControllerAttack"
   participant_client_id: "ControllerParticipant"
-  connected_clients_url: "http://173.249.13.108:8081/api/v4/clients"
+  connected_clients_url: "http://149.102.148.81:8086/api/v4/clients"
   api_basic_token: "YWRtaW46cHVibGlj"
