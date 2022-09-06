@@ -18,6 +18,7 @@ public class EmqxConnectionRefresherConfig {
 
     @Scheduled(fixedDelay = 10000, initialDelay = 4000)
     public MqttClient refreshConnectionsOfAttacksMqttClient() {
+        //TODO: We should add subscribe after connection in here
         return messageBrokerConnector.reConnectAttacksMqttClient();
     }
 }
