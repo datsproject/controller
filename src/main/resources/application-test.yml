@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: controller
+  main:
+    banner-mode: off
+    allow-circular-references: true
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
+    time-zone: UTC
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+  devtools:
+    restart:
+      enabled: false
+
+logging:
+  level:
+    root: info
+    org:
+      springframework:
+        web:
+          client:
+            RestTemplate: DEBUG
+
+server:
+  shutdown: graceful
+  port: 9090
+
+security:
+  basic:
+    enabled: false
+
+management:
+  security:
+    enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,flyway,env,metrics"
+
+controller:
+  cache:
+    host: "127.0.0.1"
+    port: "6379"
+    password: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
+
+emqx:
+  attack_message_topic: "attackRequest/"
+  broker: "ws://149.102.148.81:8083"
+  attack_client_id: "ControllerAttack"
+  participant_client_id: "ControllerParticipant"
+  connected_clients_url: "http://149.102.148.81:8086/api/v4/clients"
+  api_basic_token: "YWRtaW46cHVibGlj"
