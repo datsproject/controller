@@ -40,9 +40,9 @@ management:
 
 controller:
   cache:
-    host: "127.0.0.1"
-    port: "6379"
-    password: "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81"
+    host: ${CONTROLLER_CACHE_HOST}
+    port: ${CONTROLLER_CACHE_PORT}
+    password: ${CONTROLLER_CACHE_PASSWORD}
 
 emqx:
   attack_message_topic: "attackRequest/"
