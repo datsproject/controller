@@ -91,6 +91,7 @@ public class MessageBrokerConnector {
         if (mqttAttacksClient != null && !mqttAttacksClient.isConnected()) {
             logger.info("Connection lost so will be reconnected to attack requests broker");
             mqttAttacksClient = getAttacksMqttClient();
+            mqttAttacksClient.subscribe(attackMessageTopic);
         }
         return mqttAttacksClient;
     }
